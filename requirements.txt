@@ -3,3 +3,4 @@ dotenv
 "anthropic[aiohttp]" 
 voyageai
 numpy
+fastmcp
