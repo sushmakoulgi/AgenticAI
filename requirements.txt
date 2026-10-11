@@ -4,3 +4,4 @@ dotenv
 voyageai
 numpy
 fastmcp
+sqlite3
