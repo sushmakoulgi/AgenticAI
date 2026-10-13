@@ -5,3 +5,4 @@ voyageai
 numpy
 fastmcp
 sqlite3
+chromadb

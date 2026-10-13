@@ -1,0 +1,33 @@
+import chromadb
+
+
+client=chromadb.PersistentClient(
+    path="./chroma_db"
+)
+
+collection=(client.get_or_create_collection(
+    name="documents"
+))
+
+def add_chunks(chunks):
+    documents=[]
+    metadata=[]
+    ids=[]
+    embeddings=[]
+
+    for chunk in chunks:
+        documents.append(chunk["text"])
+        embeddings.append(chunk["embedding"])
+        ids.append(f"{chunk["source"]}_{chunk["chunk_id"]}")
+        metadata.append(
+            {
+                "source":chunk["source"],
+                "chunk_id":chunk["chunk_id"]
+            }
+        )
+    collection.upsert(ids=ids,embeddings=embeddings,documents=documents,metadatas=metadata)
+
+def search(query_embedding,top_k):
+    return collection.query(query_embeddings=query_embedding,n_results=top_k)
+    
+        
