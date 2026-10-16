@@ -22,9 +22,10 @@ def available_cities():
 
 if __name__=="__main__":
     print("starting Weather MCP server")
-    mcp.run(
-        transport="http",
-        show_banner=True,
-        host="127.0.0.1",
-        port=8001
-    )
+    # mcp.run(
+    #     transport="http",
+    #     show_banner=True,
+    #     host="127.0.0.1",
+    #     port=8001
+    # )
+    mcp.run()
