@@ -5,6 +5,8 @@ from state import create_state
 from Claude_connector import ClaudeConnector
 import json
 
+MAX_REVISION=3
+
 async def run_manager(task):
     state=create_state(task)
 
@@ -18,7 +20,9 @@ async def run_manager(task):
             state["research"]=res_result
         elif worker=="Code":
             feedback=""
-        
+            print(state["revision_count"])
+            if state["revision_count"] >= MAX_REVISION:
+                break
             if state["review"] != "":
                 dict=json.loads(state["review"])
                 print(dict)
@@ -26,6 +30,8 @@ async def run_manager(task):
 
             code_result=await code_task(state["task"],state["research"],feedback)
             state["code"]=code_result
+            state["revision_count"]+=1
+                    
         elif worker=="Review":
             review_result=await review_code(state["task"],state["code"])
             state["review"]=review_result
@@ -56,11 +62,13 @@ async def choose_worker(state):
     task: {state["task"]} research: {state["research"]} , code: {state["code"]}
     code review :{state["review"]} and here is the history of whats completed
     {state["history"]}
+    current revision {state["revision_count"]} and max_revisions allowed is {MAX_REVISION}
     Available Workers:
     Research
     Code 
     Review
 
+    if revision count >=  max_revisions allowed then return Finish
  if you need research  and research is empty or insuffiecient then choose Research agent,
    if research is complete and code is empty, then choose Code Agent 
    if code is not well written then choose the Review agent,

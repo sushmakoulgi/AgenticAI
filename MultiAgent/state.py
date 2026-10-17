@@ -4,5 +4,6 @@ def create_state(task):
         "research":"",
         "code":"",
         "review":"",
-        "history":[]
+        "history":[],
+        "revision_count":0
     }
