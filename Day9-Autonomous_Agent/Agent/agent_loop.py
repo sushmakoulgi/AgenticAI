@@ -1,4 +1,4 @@
-from Agent.agent_state import create_state,can_continue,finish,record_observations,next_step
+from Agent.agent_state import create_state,can_continue,finish,record_observations,next_step,add_action
 
 async def run_agent_loop(
         user_request, planner, execute_action,format_answer,tools, client
@@ -14,5 +14,6 @@ async def run_agent_loop(
             break
 
         answer=await execute_action(state,action,client)
+        add_action(action=action,state=state)
         record_observations(state,action,answer)
         next_step(state)

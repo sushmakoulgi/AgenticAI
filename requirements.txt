@@ -6,3 +6,5 @@ numpy
 fastmcp
 sqlite3
 chromadb
+langgraph
+crewai
