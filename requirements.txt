@@ -8,3 +8,5 @@ sqlite3
 chromadb
 langgraph
 crewai
+bs4
+requests
