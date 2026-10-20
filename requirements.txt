@@ -10,3 +10,4 @@ langgraph
 crewai
 bs4
 requests
+ollama

@@ -260,19 +260,35 @@ async def verify_findings(
     """Verify whether evidence mathes the findings"""
     llm=ClaudeLLM()
     system="you are an AI evidence evalautor, for a given findings check if the provided envidence is supporting" \
-    "return the response in json format for example {{'supported':True, 'explaination:short one liner}}"
+    " return only json, for example {\"supported\": true, \"explanation\": \"short one liner\"}"
     message=[{
         "role":"user",
         "content":f" verify the findings {findings} against evidence {evidence} based on the source {source} "
     }]
     raw_response=await llm.generate_raw_response(messages=message,system=system)
     await llm.close()
-    for block in raw_response.content:
-        if block.type=="text":
-            result=json.loads(block.text)
-            if result["supported"]== True:
-                mark_finding_verified(source,findings)
+    text="".join(block.text for block in raw_response.content if block.type=="text")
+    # Claude sometimes wraps the json in ```json fences; keep just the {...} part
+    result=json.loads(text[text.find("{"):text.rfind("}")+1])
+    if result["supported"]== True:
+        mark_finding_verified(source,findings)
+    return result
     
+async def generate_report(user_request, verified_findings):
+    research_text=""
+    for item in verified_findings:
+        research_text+=item["source"]+ "\n" +item["evidence"]+"\n"+item["findings"]+"\n"
+
+    prompt=[{ "role":"user","content":
+        f"you are an AI report generator, given the user request {user_request} and the research text {research_text} generate report explaining header, sources used, evidences available, and paragraph on the research topic"
+    }]
+    llm=ClaudeLLM()
+    raw_response=await llm.generate_raw_response(prompt)
+    await llm.close()
+    return "".join(
+                        block.text for block in raw_response.content if block.type == "text"
+                    )
+
 
 search_web_tool = {
     "name": "search_web",

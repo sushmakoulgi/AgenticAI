@@ -7,7 +7,7 @@ from tools import (
     add_research_notes_tool,verify_findings,
     verify_findings_tool)
 
-def run_tool(tool_name, tool_input):
+async def run_tool(tool_name, tool_input):
     # Names must match the "name" field in each tool definition
     if tool_name == "search_web":
         return json.dumps(search_web(
@@ -17,11 +17,11 @@ def run_tool(tool_name, tool_input):
     elif tool_name == "read_webpage":
         return read_webpage(url=tool_input["url"])
     elif tool_name=="add_research_notes":
-        return add_research_notes(source=tool_input["source"],findings=tool_input["findings"],evidence=tool_input["evidence"])
+        return json.dumps(add_research_notes(source=tool_input["source"],findings=tool_input["findings"],evidence=tool_input["evidence"]))
     elif tool_name=="get_research_notes":
-        return get_research_notes()
+        return json.dumps(get_research_notes())
     elif tool_name=="verify_findings":
-        return verify_findings(source=tool_input["source"],findings=tool_input["findings"],evidence=tool_input["evidence"])
+        return json.dumps(await verify_findings(source=tool_input["source"],findings=tool_input["findings"],evidence=tool_input["evidence"]))
     raise ValueError(f"Unknown tool: {tool_name}")
 
 
@@ -38,17 +38,17 @@ async def research_agent(user_request):
     llm=ClaudeLLM()
 
     system=" you are an AI research Agent," \
-    "given the research plan, search the web to provide findings and provide the research report" \
+    "given the research plan, search the web to provide findings and provide the list of findings along with source and evidence" \
     "store the important findings in the research notes , before returning the report ," \
-    "for all the findings , verify the findings to make sure it is correct against the source and evidence " \
-    "do not invent sources"
+    "for all the findings , verify the findings to make sure it is correct against the evidence " \
+    "do not invent sources, keep it very short. reject a final answer when no notes have been verified and tell Claude to go back and verify them"
     messages=[
         {
             "role":"user",
-            "content":f" Given the user request {user_request} and plan {plan} ,provide the research report"
+            "content":f" Given the user request {user_request} and plan {plan} ,provide the research findings"
         }
     ]
-    max_step=5
+    max_step=10
     try:
         for step in range(max_step):
             print("Working on step ",{step+1})
@@ -67,7 +67,7 @@ async def research_agent(user_request):
                     print(f"Claude wants to use: {block.name} with arguments: {block.input}")
 
                     try:
-                        result = run_tool(block.name, block.input)
+                        result = await run_tool(block.name, block.input)
                         tool_results.append({
                             "type": "tool_result",
                             "tool_use_id": block.id, # Must match the exact ID Claude gave you
@@ -94,8 +94,8 @@ async def research_agent(user_request):
 
 
 async def create_research_plan(user_request):
-    prompt=f"Given the user request, create a concise numbered research plan to serve the user request " \
-    "{user_request}"
+    prompt=f"Given the user request, create a concise numbered research plan to serve the user request keep it within 3 limit" \
+    f" {user_request}"
 
     llm=ClaudeLLM()
     message=[{
