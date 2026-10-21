@@ -3,7 +3,7 @@ dotenv
 "anthropic[aiohttp]" 
 voyageai
 numpy
-fastmcp
+fastmcp>=3.4,<4
 sqlite3
 chromadb
 langgraph
@@ -11,3 +11,10 @@ crewai
 bs4
 requests
 ollama
+langchain-anthropic
+langchain-mcp-adapters
+mcp~=1.28.1  # langchain-mcp-adapters needs mcp<2; crewai pins 1.28.x
+langchain-community
+langchain-text-splitters
+faiss-cpu
+langchain-voyageai
