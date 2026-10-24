@@ -12,8 +12,10 @@ tools=[
 
 load_dotenv()
 key=os.getenv("ANTHROPIC_API_KEY","")
+llm_model=os.getenv("LLM_MODEL","")
+
 model=ChatAnthropic(
-    model_name="claude-opus-5-5",
+    model_name=llm_model,
     max_tokens_to_sample=1024,
     api_key=key,
     timeout=10,

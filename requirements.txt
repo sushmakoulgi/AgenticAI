@@ -18,3 +18,6 @@ langchain-community
 langchain-text-splitters
 faiss-cpu
 langchain-voyageai
+fastapi
+"fastapi[standard]"
+httpx
