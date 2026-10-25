@@ -3,12 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Research Project</title>
+    <title>AI Research Agent</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
     <header class="header">
-        <h1>AI Research Project</h1>
+        <div class="header-inner">
+            <h1>AI Research Agent</h1>
+            <p class="tagline">
+                Ask a question and the agent researches it for you, using only the documents
+                in its local knowledge base, and writes a short report with sources.
+            </p>
+            <ol class="how-it-works">
+                <li><strong>Plan</strong> Splits your topic into 3 research tasks</li>
+                <li><strong>Research</strong> Searches and reads the local context files</li>
+                <li><strong>Verify</strong> Checks every finding against its source</li>
+                <li><strong>Report</strong> Writes a summary that cites each file</li>
+            </ol>
+        </div>
     </header>
 
     <main class="container">
@@ -21,9 +33,46 @@
         </section>
 
         <section id="result" class="card result" hidden>
-            <h2>Research</h2>
+            <h2>Research progress</h2>
+
+            <div class="progress-row">
+                <div id="progressBar" class="progress" role="progressbar"
+                     aria-label="Research progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <span id="progressLabel" class="progress-label">0%</span>
+            </div>
             <p id="resultContent" class="result-content"></p>
-            <div id="reportContent" hidden></div>
+
+            <ul class="stages">
+                <li class="stage" data-stage="plan">
+                    <input type="checkbox" id="stage-plan" disabled>
+                    <label for="stage-plan">Plan the research</label>
+                    <ol id="planTasks" class="plan-tasks" hidden></ol>
+                </li>
+                <li class="stage" data-stage="research">
+                    <input type="checkbox" id="stage-research" disabled>
+                    <label for="stage-research">Research and take notes</label>
+                </li>
+                <li class="stage" data-stage="verify">
+                    <input type="checkbox" id="stage-verify" disabled>
+                    <label for="stage-verify">Verify the findings</label>
+                </li>
+                <li class="stage" data-stage="report">
+                    <input type="checkbox" id="stage-report" disabled>
+                    <label for="stage-report">Write the report</label>
+                </li>
+            </ul>
+
+            <details class="activity" open>
+                <summary>Activity log</summary>
+                <ol id="activityLog" class="activity-log" aria-live="polite"></ol>
+            </details>
+
+            <div id="reportSection" class="report-section" hidden>
+                <h2>Report</h2>
+                <div id="reportContent" class="report-text"></div>
+            </div>
         </section>
     </main>
 

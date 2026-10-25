@@ -67,7 +67,7 @@ async def run_tool(tool_call):
         return ToolMessage(content=f"Tool {tool_call['name']} failed: {exc}",tool_call_id=tool_call["id"])
 
 
-async def research_agent(request,tasks):
+async def research_agent(request,tasks,callback):
     """Run the plan: call the LLM, execute any tool calls it returns, and send the results back.
     Stops when the verified notes are fetched, the LLM makes no more tool calls, or MAX_STEPS is reached.
     Returns the verified notes."""
@@ -82,7 +82,7 @@ async def research_agent(request,tasks):
                     "type":"Research Step",
                     "message":f"Executing Research step {step} is complete ",
                     "output":f"step {step}"
-                })
+                },callback)
         ai_message=await researcher.ainvoke(messages)
         messages.append(ai_message)
 
@@ -92,7 +92,7 @@ async def research_agent(request,tasks):
                         "type":"Research Step",
                         "message":"Research plan is complete ",
                         "output":f"Step {step}: research agent made no tool call, research finished"
-                    })
+                    },callback)
             break
 
         for tool_call in ai_message.tool_calls:
@@ -101,20 +101,20 @@ async def research_agent(request,tasks):
                     "type":"Tool call Step",
                     "message":"Tool calling ",
                     "output":f"Step {step}: {tool_call['name']}({tool_call['args']})"
-                })
+                },callback)
             messages.append(await run_tool(tool_call))
             emit({
                         "type":"Tool call Complete",
                         "message":"Tool call Complete ",
                         "output":f"Step {step}: {tool_call['name']}({tool_call['args']}) complete"
-                    })
+                    },callback)
         if any(call["name"]=="get_verified_notes" for call in ai_message.tool_calls):
             print(f"Step {step}: verified notes fetched, research complete")
             emit({
                     "type":"Verification Step",
                     "message":"Verifying Research Notes",
                     "output":f"Step {step}:  Research Verification"
-                })
+                },callback)
             break
     else:
         print(f"Stopped after {MAX_STEPS} steps")
@@ -122,7 +122,7 @@ async def research_agent(request,tasks):
                 "type":"Stopping due to max steps",
                 "message":"Max steps compelted ",
                 "output":f"Step {step}: {tool_call['name']}({tool_call['args']})"
-            })
+            },callback)
 
     return [note for note in research_notes if note["verified"]]
 
@@ -137,8 +137,8 @@ and end with a one-line summary."""
 reporter=model.with_structured_output(ResearchReport,method="json_schema")
 
 
-async def reporter_agent(request,notes):
-    """LLM call that turns the user request and verified notes into an HTML report to show inline."""
+async def reporter_agent(request,notes,callback):
+    """LLM call that turns the user request and verified notes into a plain-text report."""
     if not notes:
         report=ResearchReport(
             heading=request,
@@ -151,14 +151,32 @@ async def reporter_agent(request,notes):
             {"role":"system","content":REPORTER_PROMPT},
             {"role":"user","content":f"User request: {request}\n\nVerified findings:\n{findings}"}
         ])
+    report_text=build_report_text(request,report)
     emit({
                 "type":"Report",
                 "message":"Research report is complete ",
-                "output":report
-            })
-    report_html=build_report_html(request,report)
-    save_report(report.heading,report_html)
-    return report_html
+                "output":report_text
+            },callback)
+    save_report(report.heading,build_report_html(request,report))
+    return report_text
+
+
+def build_report_text(request,report):
+    """Build the report as plain text to return to the research API."""
+    if report.findings:
+        findings_text="\n".join(f"- {f.point} [{f.source}]" for f in report.findings)
+    else:
+        findings_text="No findings."
+
+    return f"""{report.heading}
+
+Request: {request}
+
+What the research says
+{findings_text}
+
+Summary
+{report.summary}"""
 
 
 def build_report_html(request,report):
@@ -220,7 +238,7 @@ def save_report(heading,report_html):
     file_path.write_text(page)
     print(f"Report saved to {file_path}")
 
-def emit(message,callback):
+def emit(message,progress_callback):
     if progress_callback:
         progress_callback(message)
 
@@ -228,7 +246,7 @@ def emit(message,callback):
 
 @retry(stop=stop_after_attempt(2),wait=wait_exponential(multiplier=1,min=1,max=4),reraise=True)
 async def run_agent(request,callback):
-    """Plan, research, then report. Returns the report as an HTML fragment."""
+    """Plan, research, then report. Returns the report as plain text."""
     # Start each request with an empty notes list
     research_notes.clear()
     try:
@@ -238,16 +256,16 @@ async def run_agent(request,callback):
             "type":"plan",
             "message":"Research plan is complete ",
             "output":tasks
-        })
-        notes=await asyncio.wait_for(research_agent(request,tasks),timeout=120)
+        },callback)
+        notes=await asyncio.wait_for(research_agent(request,tasks,callback),timeout=120)
         print(f"Verified notes: {len(notes)}")
 
         emit({
                     "type":"verification",
                     "message":"these are number of the verified notes ",
                     "output":len(notes)
-                })
-        return await reporter_agent(request,notes)
+                },callback)
+        return await reporter_agent(request,notes,callback)
     except asyncio.TimeoutError as te:
         raise HTTPException(
             status_code=504,
