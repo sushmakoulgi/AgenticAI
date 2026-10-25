@@ -1,0 +1,20 @@
+The Model Context Protocol (MCP) is an open standard introduced by Anthropic in November 2024.
+MCP defines how AI applications connect to external tools, data sources and services.
+It is often described as a "USB-C port for AI", giving one common way to plug in many integrations.
+MCP follows a client-server architecture built on JSON-RPC 2.0 messages.
+A host is the AI application the user works with, such as Claude Desktop, Claude Code or an IDE.
+Inside the host, an MCP client keeps a one-to-one connection with a single MCP server.
+An MCP server is a program that exposes capabilities, such as access to GitHub, a database or the file system.
+Servers offer three main primitives: tools, resources and prompts.
+Tools are functions the model can call to take actions, such as running a query or creating a file.
+Resources are read-only data, such as file contents or database records, that give the model context.
+Prompts are reusable templates that guide the model through a specific task or workflow.
+Clients can also offer features to servers, such as sampling, which lets a server ask the model for a completion.
+MCP supports two main transports: stdio for local servers and Streamable HTTP for remote servers.
+With stdio, the host starts the server as a subprocess and talks to it through standard input and output.
+Remote servers usually use OAuth 2.1 for authorization, so users can grant access safely.
+When a connection starts, client and server exchange an initialize request to agree on protocol version and capabilities.
+Official SDKs exist for Python, TypeScript, Java, Kotlin, C#, Go and other languages.
+In Python, the FastMCP class lets you turn an ordinary function into a tool with the @mcp.tool() decorator.
+MCP replaces many one-off integrations with one protocol, so a server written once works with any MCP client.
+Because tools can take real actions, hosts should ask users to approve tool calls and should only connect to trusted servers.

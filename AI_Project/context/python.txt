@@ -1,0 +1,20 @@
+Python is a high-level, general-purpose programming language created by Guido van Rossum and first released in 1991.
+Its design philosophy stresses code readability, using indentation instead of braces to mark code blocks.
+Python is dynamically typed: a variable's type is checked when the program runs, not when it is written.
+Optional type hints, such as def add(a: int, b: int) -> int, help editors and tools catch mistakes early.
+Python supports several programming styles, including procedural, object-oriented and functional programming.
+The built-in data types include int, float, str, bool, list, tuple, dict and set.
+Lists are ordered and changeable, tuples are ordered and unchangeable, and sets hold unique values.
+Dictionaries store key-value pairs and are one of the most used data structures in Python.
+List comprehensions build lists in one line, for example [x * x for x in range(10)].
+Functions are defined with def, and anonymous functions can be written with lambda.
+Classes are defined with class, and methods receive the object itself as the first parameter, named self.
+Errors are handled with try, except, else and finally blocks.
+The with statement uses context managers to open and close resources such as files safely.
+Python's standard library includes modules for files, JSON, dates, math, networking and much more.
+Extra packages are installed from the Python Package Index (PyPI) using pip.
+Virtual environments, created with python -m venv, keep each project's packages separate.
+The asyncio module and the async and await keywords let Python run many I/O tasks concurrently.
+Python is widely used in web development with frameworks such as Django, Flask and FastAPI.
+It is the leading language for data science and AI, with libraries such as NumPy, pandas, PyTorch and LangChain.
+CPython is the reference implementation, and new major versions are released every year.

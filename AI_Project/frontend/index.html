@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Research Project</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header class="header">
+        <h1>AI Research Project</h1>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <label for="topic" class="label">Research topic</label>
+            <textarea id="topic" class="topic" rows="5"
+                      placeholder="e.g. The impact of AI agents on software development"></textarea>
+            <p id="error" class="error" hidden>Please enter a research topic.</p>
+            <button id="researchBtn" class="btn" type="button">Research</button>
+        </section>
+
+        <section id="result" class="card result" hidden>
+            <h2>Research</h2>
+            <p id="resultContent" class="result-content"></p>
+            <div id="reportContent" hidden></div>
+        </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
